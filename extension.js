@@ -47,10 +47,12 @@ export default class ProtonVPNButtonExtension {
 
         if (this._app.get_windows().length > 0) {
             this._button._icon.set_opacity(255);
+            this._button.remove_effect(this._button._desaturate_effect);
             this._window = this._app.get_windows()[0];
             this._window.minimize();
         } else {
             this._button._icon.set_opacity(BUTTON_LOW_OPACITY);
+            this._button.add_effect(this._button._desaturate_effect);
         }
     }
 
