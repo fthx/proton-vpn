@@ -15,6 +15,8 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 
+const APP_NAME = 'protonvpn-app.desktop';
+
 const ProtonVPNButton = GObject.registerClass(
 class ProtonVPNButton extends PanelMenu.Button {
     _init(path) {
@@ -43,7 +45,7 @@ class ProtonVPNButton extends PanelMenu.Button {
     }
 
     _updateState() {
-        this._id = this._toggle._client.primary_connection.id;
+        this._id = this._toggle._client.primary_connection?.id || '';
 
         if (this._id.includes('ProtonVPN')) {
             this._icon.set_gicon(this._activeStateIcon);
@@ -55,18 +57,17 @@ class ProtonVPNButton extends PanelMenu.Button {
     }
 
     _checkApp() {
-        this._app = Shell.AppSystem.get_default().lookup_app('protonvpn-app.desktop');
+        this._app = Shell.AppSystem.get_default().lookup_app(APP_NAME);
 
         if (!this._app)
             Main.notify('Proton VPN extension', 'Warning: Proton VPN app not found', false);
     }
 
     _onClicked() {
-        if (this._app?.get_n_windows() > 0) {
+        if (this._app?.get_n_windows() > 0)
             this._app?.request_quit();
-        } else {
+        else
             this._app?.activate();
-        }
     }
 
     _destroy() {
