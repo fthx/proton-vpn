@@ -5,6 +5,7 @@
 
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
@@ -35,13 +36,18 @@ class ProtonVPNButton extends PanelMenu.Button {
         this._box.add_child(this._label);
         this.add_child(this._box);
 
-        this._toggle = Main.panel.statusArea.quickSettings._network._vpnToggle;
-
-        this._checkApp();
-        this._updateState();
-
         this.connectObject('button-release-event', this._onClicked.bind(this), this);
-        this._toggle._client?.connectObject('notify::active-connections', this._updateState.bind(this), this);
+
+        this._timeout = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this._toggle = Main.panel.statusArea.quickSettings._network._vpnToggle;
+
+            this._checkApp();
+            this._updateState();
+
+            this._toggle._client?.connectObject('notify::active-connections', this._updateState.bind(this), this);
+
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _updateState() {
@@ -71,6 +77,11 @@ class ProtonVPNButton extends PanelMenu.Button {
     }
 
     _destroy() {
+        if (this._timeout) {
+            GLib.Source.remove(this._timeout);
+            this._timeout = null;
+        }
+
         this._toggle._client?.disconnectObject(this);
         this._app?.disconnectObject(this);
 
