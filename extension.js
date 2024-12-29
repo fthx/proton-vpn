@@ -45,7 +45,7 @@ class ProtonVPNButton extends PanelMenu.Button {
     }
 
     _updateState() {
-        this._id = this._toggle._client.primary_connection?.id || '';
+        this._id = this._toggle._client?.primary_connection?.id || '';
 
         if (this._id.includes('ProtonVPN')) {
             this._icon.set_gicon(this._activeStateIcon);
