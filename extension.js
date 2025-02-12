@@ -28,9 +28,9 @@ class ProtonVPNButton extends PanelMenu.Button {
         this._activeStateIcon = Gio.icon_new_for_string(activeStateIconPath);
         this._inactiveStateIcon = Gio.icon_new_for_string(inactiveStateIconPath);
 
-        this._box = new St.BoxLayout({reactive: true, style_class: 'panel-button'});
+        this._box = new St.BoxLayout();
         this._icon = new St.Icon({style_class: 'system-status-icon'});
-        this._label = new St.Label({y_align: Clutter.ActorAlign.CENTER, style_class: "user-label"});
+        this._label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
 
         this._box.add_child(this._icon);
         this._box.add_child(this._label);
@@ -46,6 +46,7 @@ class ProtonVPNButton extends PanelMenu.Button {
 
             this._toggle._client?.connectObject('notify::active-connections', this._updateState.bind(this), this);
 
+            this._timeout = null;
             return GLib.SOURCE_REMOVE;
         });
     }
@@ -55,7 +56,7 @@ class ProtonVPNButton extends PanelMenu.Button {
 
         if (this._id.includes('ProtonVPN')) {
             this._icon.set_gicon(this._activeStateIcon);
-            this._label.set_text(this._id.replace('ProtonVPN ', ''));
+            this._label.set_text(this._id.replace('ProtonVPN ', '') + ' ');
         } else {
             this._icon.set_gicon(this._inactiveStateIcon);
             this._label.set_text('');

@@ -1,7 +1,7 @@
 {
-  "description": "Proton VPN button in top panel.\n\n Click on button to close/open Proton VPN app. Does not interfere in any way with connection itself.\n\n Useful for those who don't want to use Ubuntu AppIndicators extension (Proton VPN in systray's legacy indicators).\n\n This extension is not affiliated, funded or in any way associated with Proton VPN.",
+  "description": "Proton VPN button in top panel.\n\n Click on button to close/open Proton VPN app. Does not interfere in any way with connection itself: the extension just reads GNOME quick settings VPN button infos.\n\n Useful for those who don't want to use Ubuntu AppIndicators extension (Proton VPN in systray's legacy indicators).\n\n This extension is not affiliated, funded or in any way associated with Proton VPN.",
   "name": "Proton VPN Button",
-  "shell-version": ["46", "47"],
+  "shell-version": ["46", "47", "48"],
   "url": "https://github.com/fthx/proton-vpn",
   "uuid": "proton-vpn@fthx",
   "version": 999
