@@ -28,15 +28,18 @@ class ProtonVPNButton extends PanelMenu.Button {
         this._activeStateIcon = Gio.icon_new_for_string(activeStateIconPath);
         this._inactiveStateIcon = Gio.icon_new_for_string(inactiveStateIconPath);
 
-        this._box = new St.BoxLayout();
+        this._box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
         this._icon = new St.Icon({style_class: 'system-status-icon'});
         this._label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
+
+        this._desaturateEffect = new Clutter.DesaturateEffect();
+        this._icon.add_effect(this._desaturateEffect);
 
         this._box.add_child(this._icon);
         this._box.add_child(this._label);
         this.add_child(this._box);
 
-        this.connectObject('button-release-event', this._onClicked.bind(this), this);
+        this.connectObject('button-press-event', this._onClicked.bind(this), this);
 
         this._timeout = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             this._toggle = Main.panel.statusArea.quickSettings._network._vpnToggle;
@@ -44,7 +47,7 @@ class ProtonVPNButton extends PanelMenu.Button {
             this._checkApp();
             this._updateState();
 
-            this._toggle._client?.connectObject('notify::active-connections', this._updateState.bind(this), this);
+            this._toggle.connectObject('notify::subtitle', this._updateState.bind(this), this);
 
             this._timeout = null;
             return GLib.SOURCE_REMOVE;
@@ -52,11 +55,11 @@ class ProtonVPNButton extends PanelMenu.Button {
     }
 
     _updateState() {
-        this._id = this._toggle._client?.primary_connection?.id || '';
+        this._id = this._toggle.subtitle || '';
 
         if (this._id.includes('ProtonVPN')) {
             this._icon.set_gicon(this._activeStateIcon);
-            this._label.set_text(this._id.replace('ProtonVPN ', '') + ' ');
+            this._label.set_text(this._id.replace('ProtonVPN ', ''));
         } else {
             this._icon.set_gicon(this._inactiveStateIcon);
             this._label.set_text('');
@@ -82,6 +85,9 @@ class ProtonVPNButton extends PanelMenu.Button {
             GLib.Source.remove(this._timeout);
             this._timeout = null;
         }
+
+        this._desaturateEffect.destroy();
+        this._desaturateEffect = null;
 
         this._toggle._client?.disconnectObject(this);
         this._app?.disconnectObject(this);
