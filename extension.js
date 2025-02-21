@@ -1,6 +1,6 @@
 //    Proton VPN Button
 //    GNOME Shell extension
-//    @fthx 2024
+//    @fthx 2025
 
 
 import Clutter from 'gi://Clutter';
@@ -13,7 +13,7 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 
 const APP_NAME = 'protonvpn-app.desktop';
@@ -23,23 +23,21 @@ class ProtonVPNButton extends PanelMenu.Button {
     _init(path) {
         super._init();
 
-        let activeStateIconPath = path + "/icons/connected.svg";
-        let inactiveStateIconPath = path + "/icons/disconnected.svg";
-        this._activeStateIcon = Gio.icon_new_for_string(activeStateIconPath);
-        this._inactiveStateIcon = Gio.icon_new_for_string(inactiveStateIconPath);
+        let iconPath = path + '/icons/protonvpn.svg';
+        let gicon = Gio.icon_new_for_string(iconPath);
 
         this._box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
-        this._icon = new St.Icon({style_class: 'system-status-icon'});
+        this._icon = new St.Icon({style_class: 'system-status-icon', gicon: gicon});
         this._label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
-
-        this._desaturateEffect = new Clutter.DesaturateEffect();
-        this._icon.add_effect(this._desaturateEffect);
 
         this._box.add_child(this._icon);
         this._box.add_child(this._label);
         this.add_child(this._box);
 
-        this.connectObject('button-press-event', this._onClicked.bind(this), this);
+        this.connectObject(
+            'button-press-event', this._onClicked.bind(this),
+            'destroy', this._destroy.bind(this),
+            this);
 
         this._timeout = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             this._toggle = Main.panel.statusArea.quickSettings._network._vpnToggle;
@@ -58,10 +56,10 @@ class ProtonVPNButton extends PanelMenu.Button {
         this._id = this._toggle.subtitle || '';
 
         if (this._id.includes('ProtonVPN')) {
-            this._icon.set_gicon(this._activeStateIcon);
+            this._icon.opacity = 255;
             this._label.set_text(this._id.replace('ProtonVPN ', ''));
         } else {
-            this._icon.set_gicon(this._inactiveStateIcon);
+            this._icon.opacity = 128;
             this._label.set_text('');
         }
     }
@@ -86,9 +84,6 @@ class ProtonVPNButton extends PanelMenu.Button {
             this._timeout = null;
         }
 
-        this._desaturateEffect.destroy();
-        this._desaturateEffect = null;
-
         this._toggle._client?.disconnectObject(this);
         this._app?.disconnectObject(this);
 
@@ -107,7 +102,7 @@ export default class ProtonVPNButtonExtension extends Extension {
     }
 
     disable() {
-        this._button._destroy();
+        this._button.destroy();
         this._button = null;
     }
 }
