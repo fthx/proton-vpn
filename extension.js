@@ -17,6 +17,7 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 
 const APP_NAME = 'protonvpn-app.desktop';
+const FLATPAK_APP_NAME = 'com.protonvpn.www.desktop';
 
 const ProtonVPNButton = GObject.registerClass(
 class ProtonVPNButton extends PanelMenu.Button {
@@ -66,6 +67,8 @@ class ProtonVPNButton extends PanelMenu.Button {
 
     _checkApp() {
         this._app = Shell.AppSystem.get_default().lookup_app(APP_NAME);
+        if (!this._app)
+            this._app = Shell.AppSystem.get_default().lookup_app(FLATPAK_APP_NAME);
 
         if (!this._app)
             Main.notify('Proton VPN extension', 'Warning: Proton VPN app not found', false);
