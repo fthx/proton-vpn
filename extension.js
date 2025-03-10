@@ -47,6 +47,7 @@ class ProtonVPNButton extends PanelMenu.Button {
             this._updateState();
 
             this._toggle.connectObject('notify::subtitle', this._updateState.bind(this), this);
+            this._toggle.connectObject('notify::visible', this._updateState.bind(this), this);
 
             this._timeout = null;
             return GLib.SOURCE_REMOVE;
@@ -56,7 +57,7 @@ class ProtonVPNButton extends PanelMenu.Button {
     _updateState() {
         this._id = this._toggle.subtitle || '';
 
-        if (this._id.includes('ProtonVPN')) {
+        if (this._id.includes('ProtonVPN') && this._toggle.visible) {
             this._icon.opacity = 255;
             this._label.set_text(this._id.replace('ProtonVPN ', ''));
         } else {
