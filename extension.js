@@ -60,9 +60,10 @@ class ProtonVPNButton extends PanelMenu.Button {
         if (this._id.includes('ProtonVPN') && this._toggle.visible) {
             this._icon.opacity = 255;
             this._label.set_text(this._id.replace('ProtonVPN ', ''));
+            this._label.show();
         } else {
             this._icon.opacity = 128;
-            this._label.set_text('');
+            this._label.hide();
         }
     }
 
