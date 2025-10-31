@@ -13,86 +13,85 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 
-const APP_NAME = 'protonvpn-app.desktop';
+const APP_NAME = 'proton.vpn.app.gtk.desktop';
 const FLATPAK_APP_NAME = 'com.protonvpn.www.desktop';
+const INACTIVE_VPN_ICON_OPACITY = 128;
 
 const ProtonVPNButton = GObject.registerClass(
-class ProtonVPNButton extends PanelMenu.Button {
-    _init(path) {
-        super._init();
+    class ProtonVPNButton extends PanelMenu.Button {
+        _init(path) {
+            super._init();
 
-        let iconPath = path + '/icons/protonvpn.svg';
-        let gicon = Gio.icon_new_for_string(iconPath);
+            const iconPath = `${path}/icons/protonvpn.svg`;
+            const gicon = Gio.icon_new_for_string(iconPath);
 
-        this._box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
-        this._icon = new St.Icon({style_class: 'system-status-icon', gicon: gicon});
-        this._label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
+            this._box = new St.BoxLayout({ style_class: 'panel-status-menu-box' });
+            this._icon = new St.Icon({ style_class: 'system-status-icon', gicon: gicon });
+            this._label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
 
-        this._box.add_child(this._icon);
-        this._box.add_child(this._label);
-        this.add_child(this._box);
+            this._box.add_child(this._icon);
+            this._box.add_child(this._label);
+            this.add_child(this._box);
 
-        this.connectObject(
-            'button-press-event', this._onClicked.bind(this),
-            'destroy', this._destroy.bind(this),
-            this);
+            this.connectObject('button-press-event', () => this._onClicked(), this);
 
-        this._timeout = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this._toggle = Main.panel.statusArea.quickSettings._network._vpnToggle;
+            this._timeout = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this._toggle = Main.panel.statusArea.quickSettings?._network?._vpnToggle;
 
-            this._checkApp();
-            this._updateState();
+                this._checkApp();
+                this._updateState();
 
-            this._toggle._client?.connectObject('notify::active-connections', this._updateState.bind(this), this);
+                this._toggle?._client?.connectObject('notify::active-connections', () => this._updateState(), this);
 
-            this._timeout = null;
-            return GLib.SOURCE_REMOVE;
-        });
-    }
-
-    _updateState() {
-        this._id = this._toggle.subtitle || '';
-
-        if (this._toggle.checked && this._id.includes('ProtonVPN')) {
-            this._icon.opacity = 255;
-            this._label.show();
-            this._label.set_text(this._id.replace('ProtonVPN ', ''));
-        } else {
-            this._icon.opacity = 128;
-            this._label.hide();
-        }
-    }
-
-    _checkApp() {
-        this._app = Shell.AppSystem.get_default().lookup_app(APP_NAME);
-        if (!this._app)
-            this._app = Shell.AppSystem.get_default().lookup_app(FLATPAK_APP_NAME);
-
-        if (!this._app)
-            Main.notify('Proton VPN extension', 'Warning: Proton VPN app not found', false);
-    }
-
-    _onClicked() {
-        if (this._app?.get_n_windows() > 0)
-            this._app?.request_quit();
-        else
-            this._app?.activate();
-    }
-
-    _destroy() {
-        if (this._timeout) {
-            GLib.Source.remove(this._timeout);
-            this._timeout = null;
+                this._timeout = null;
+                return GLib.SOURCE_REMOVE;
+            });
         }
 
-        this._toggle._client?.disconnectObject(this);
+        _updateState() {
+            this._id = this._toggle?.subtitle ?? '';
 
-        super.destroy();
-    }
-});
+            if (this._toggle?.checked && this._id?.includes('ProtonVPN')) {
+                this._icon.opacity = 255;
+                this._label.text = this._id?.replace('ProtonVPN ', '') ?? '';
+                this._label.show();
+            } else {
+                this._icon.opacity = INACTIVE_VPN_ICON_OPACITY;
+                this._label.hide();
+            }
+        }
+
+        _checkApp() {
+            this._app = Shell.AppSystem.get_default().lookup_app(APP_NAME);
+
+            if (!this._app)
+                this._app = Shell.AppSystem.get_default().lookup_app(FLATPAK_APP_NAME);
+
+            if (!this._app)
+                Main.notify('Proton VPN extension', 'Warning: Proton VPN app not found', false);
+        }
+
+        _onClicked() {
+            if (this._app?.get_n_windows() > 0)
+                this._app?.request_quit();
+            else
+                this._app?.activate();
+        }
+
+        destroy() {
+            if (this._timeout) {
+                GLib.Source.remove(this._timeout);
+                this._timeout = null;
+            }
+
+            this._toggle?._client?.disconnectObject(this);
+
+            super.destroy();
+        }
+    });
 
 export default class ProtonVPNButtonExtension extends Extension {
     constructor(metadata) {
@@ -105,7 +104,7 @@ export default class ProtonVPNButtonExtension extends Extension {
     }
 
     disable() {
-        this._button.destroy();
+        this._button?.destroy();
         this._button = null;
     }
 }
