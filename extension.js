@@ -25,7 +25,7 @@ const ProtonVPNButton = GObject.registerClass(
         _init(path) {
             super._init();
 
-            const iconPath = `${path}/icons/protonvpn.svg`;
+            const iconPath = `${path}/icons/protonvpn-symbolic.svg`;
             const gicon = Gio.icon_new_for_string(iconPath);
 
             this._box = new St.BoxLayout({ style_class: 'panel-status-menu-box' });
